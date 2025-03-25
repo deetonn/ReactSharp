@@ -51,12 +51,22 @@ public class WhenState<T>(Stateful<T> item)
 public delegate void OnStateChange();
 
 /// <summary>
+/// A variant of <see cref="Stateful{T}"/> that is readonly. It cannot be set,
+/// and can only be accessed via <see cref="React.Value{T}(Stateful{T})"/ like always.>
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public interface IReadonlyStateful<T>
+{
+    internal T Unwrap();
+}
+
+/// <summary>
 /// The core component. This encapsulates a value and state watchers. 
 /// When the value is changed, the state watchers are called. 
 /// </summary>
 /// <typeparam name="T"></typeparam>
 /// <param name="value"></param>
-public class Stateful<T>(T value)
+public class Stateful<T>(T value) : IReadonlyStateful<T>
 {
     private T _value = value;
     private readonly List<OnStateChange> _stateWatchers = [];
@@ -107,7 +117,7 @@ public class Stateful<T>(T value)
     /// Unwrap the value.
     /// </summary>
     /// <returns></returns>
-    internal T Unwrap() => _value;
+    T IReadonlyStateful<T>.Unwrap() => _value;
 
     public override string? ToString()
     {

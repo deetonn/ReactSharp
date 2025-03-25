@@ -93,6 +93,48 @@ public static class React
     }
 
     /// <summary>
+    /// Generate a unique identifier. The ID will not change on subsequent calls to this function
+    /// from the same callsite.
+    /// </summary>
+    /// <param name="options">Any options for the ID.</param>
+    /// <param name="filePath">Ignore; do not set manually.</param>
+    /// <param name="lineNumber">Ignore; do not set manually.</param>
+    /// <returns></returns>
+    public static int UseId(IdOptions? options = null, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
+    {
+        return Etc.GenerateUniqueId(filePath, lineNumber, options);
+    }
+
+    /// <summary>
+    /// Cache a computation. The first time this is called, it will be computed. Any subsequent
+    /// calls from the same callsite will return the original computed value.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="computer">The function that computes the initial value.</param>
+    /// <param name="filePath">Ignore; do not set manually.</param>
+    /// <param name="lineNumber">Ignore; do not set manually.</param>
+    /// <returns></returns>
+    public static T Cache<T>(Func<T> computer, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
+    {
+        var hashCode = $"{filePath}:{lineNumber}:cache".GetHashCode();
+
+        if (Etc.Cache.TryGetValue(hashCode, out var existingCache))
+            return (T)existingCache;
+
+        // otherwise, compute and cache.
+        var result = computer();
+
+        Etc.Cache.Add(hashCode, result!);
+
+        return result;
+    }
+
+    public static T Use<T>(Task<T> task)
+    {
+        return task.GetAwaiter().GetResult();
+    }
+
+    /// <summary>
     /// Have an action occur When something happens. See <see cref="It{T}(Stateful{T})"/> for dealing with
     /// the first argument.
     /// </summary>
@@ -184,7 +226,7 @@ public static class React
     /// <typeparam name="T"></typeparam>
     /// <param name="stateful"></param>
     /// <returns></returns>
-    public static T Value<T>(Stateful<T> stateful)
+    public static T Value<T>(IReadonlyStateful<T> stateful)
     {
         return stateful.Unwrap();
     }

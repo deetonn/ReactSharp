@@ -1,11 +1,8 @@
 ﻿
-using System.Collections;
-using System.Dynamic;
-
 namespace Reactivity;
 
 /// <summary>
-/// A list of values that are dependants to an effect. If they change,
+/// A list of values that are dependants to an effect. If any change,
 /// the effect occurs.
 /// </summary>
 public class DependencyList

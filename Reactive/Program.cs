@@ -1,31 +1,25 @@
-﻿using System.Diagnostics;
-using Reactivity;
+﻿using Reactivity;
 
-var stopwatch = new Stopwatch();
-stopwatch.Start();
+var config = new Config();
 
-var (count, setCount) = React.UseState(40);
-var (loading, setLoading) = React.UseState(true);
+config.TitleEnabled.Value = false;
 
-var endCondition = React.It(count).MeetsCondition((count) =>
+public class Config
 {
-    return count >= 50;
-});
+    public Property<bool> TitleEnabled { get; set; } = new(false);
 
-React.When(endCondition, (_) =>  setLoading(false));
-
-React.UseEffect(() =>
-{
-    var initialCount = React.UseRef(React.Value(count));
-    var diff = React.Value(count) - initialCount.Value;
-    Console.WriteLine($"Current count: {React.Value(count)} ({diff}) -- Initial: {initialCount}");
-}, new DependencyList([count]));
-
-while (React.Value(loading))
-{
-    setCount(React.Value(count) + 1);
+    public Config()
+    {
+        React.UseEffect(() =>
+        {
+            if (TitleEnabled.Value)
+            {
+                Console.WriteLine("Title has been enabled.");
+            } 
+            else
+            {
+                Console.WriteLine("Title has been disabled.");
+            }
+        }, new DependencyList([TitleEnabled.State()]));
+    }
 }
-
-stopwatch.Stop();
-
-Console.WriteLine($"\n\nTook {stopwatch.ElapsedMilliseconds}ms");
